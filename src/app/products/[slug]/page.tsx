@@ -4,11 +4,23 @@ import { ProductWithVariants } from '@/types';
 import { Suspense } from 'react';
 import { ProductDetailSkeleton } from '@/components/Skeletons';
 
-async function getProduct(slug: string) {
-  const res = await fetch(`${process.env.VERCEL_URL ? 'https://'+process.env.VERCEL_URL : 'http://localhost:3000'}/api/products/${slug}`, { cache: 'no-store' });
-  if (res.status === 404) return null;
-  if (!res.ok) throw new Error('Failed to fetch product');
-  return res.json() as Promise<ProductWithVariants>;
+import prisma from '@/lib/prisma';
+
+async function getProduct(slug: string): Promise<ProductWithVariants | null> {
+  const product = await prisma.product.findUnique({
+    where: { slug },
+    include: {
+      variants: {
+        include: {
+          emiPlans: {
+            orderBy: { tenureMonths: 'asc' }
+          }
+        }
+      }
+    }
+  });
+
+  return (product as unknown) as ProductWithVariants | null;
 }
 
 export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {

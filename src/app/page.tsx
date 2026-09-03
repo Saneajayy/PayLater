@@ -3,22 +3,62 @@ import { Suspense } from 'react';
 import { ProductGridSkeleton } from '@/components/Skeletons';
 import HomeClient from '@/components/HomeClient';
 
-async function getProducts() {
-  const res = await fetch(`${process.env.VERCEL_URL ? 'https://'+process.env.VERCEL_URL : 'http://localhost:3000'}/api/products`, { cache: 'no-store' });
-  if (!res.ok) throw new Error('Failed to fetch products');
-  return res.json() as Promise<ProductSummary[]>;
+import prisma from '@/lib/prisma';
+
+async function getProducts(): Promise<ProductSummary[]> {
+  const products = await prisma.product.findMany({
+    include: {
+      variants: {
+        where: { isDefault: true },
+        include: { emiPlans: true }
+      }
+    }
+  });
+
+  return products.map((p) => {
+    const defaultVariant = p.variants[0];
+    const startingEmi = defaultVariant?.emiPlans.reduce((min, plan) => 
+      plan.monthlyAmount < min ? plan.monthlyAmount : min, Infinity
+    ) || 0;
+    
+    let discountPercent = 0;
+    if (defaultVariant && defaultVariant.mrp > 0) {
+       discountPercent = Math.round(((defaultVariant.mrp - defaultVariant.price) / defaultVariant.mrp) * 100);
+    }
+
+    return {
+      slug: p.slug,
+      name: p.name,
+      brand: p.brand,
+      image: defaultVariant?.imageUrl || '',
+      promoImage: (p as any).promoImage || '',
+      mrp: defaultVariant?.mrp || 0,
+      price: defaultVariant?.price || 0,
+      discountPercent,
+      rating: p.rating,
+      isNew: p.isNew,
+      startingEmi: startingEmi === Infinity ? 0 : startingEmi
+    };
+  });
 }
 
-async function getFaqs() {
-  const res = await fetch(`${process.env.VERCEL_URL ? 'https://'+process.env.VERCEL_URL : 'http://localhost:3000'}/api/faqs`, { cache: 'no-store' });
-  if (!res.ok) return [];
-  return res.json() as Promise<FaqType[]>;
+async function getFaqs(): Promise<FaqType[]> {
+  const faqs = await prisma.fAQ.findMany({ orderBy: { createdAt: 'asc' } });
+  return faqs.map(f => ({
+    id: f.id,
+    question: f.question,
+    answer: f.answer
+  }));
 }
 
-async function getTestimonials() {
-  const res = await fetch(`${process.env.VERCEL_URL ? 'https://'+process.env.VERCEL_URL : 'http://localhost:3000'}/api/testimonials`, { cache: 'no-store' });
-  if (!res.ok) return [];
-  return res.json() as Promise<TestimonialType[]>;
+async function getTestimonials(): Promise<TestimonialType[]> {
+  const test = await prisma.testimonial.findMany({ orderBy: { createdAt: 'asc' } });
+  return test.map(t => ({
+    id: t.id,
+    name: t.name,
+    avatar: t.avatar,
+    text: t.text
+  }));
 }
 
 export default async function Home() {
