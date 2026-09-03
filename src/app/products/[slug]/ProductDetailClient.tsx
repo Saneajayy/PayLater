@@ -79,6 +79,10 @@ export default function ProductDetailClient({ product }: { product: ProductWithV
               </h1>
               
               <PriceBlock mrp={selectedVariant.mrp} price={selectedVariant.price} />
+
+              <p className="text-gray-600 mt-4 leading-relaxed text-sm md:text-base">
+                {product.description}
+              </p>
             </div>
 
             <VariantSelector 
