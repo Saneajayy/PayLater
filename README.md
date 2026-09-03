@@ -92,6 +92,31 @@ Creates a new order application.
 }
 ```
 
+### `GET /api/faqs`
+Returns a list of all Frequently Asked Questions.
+```json
+[
+  {
+    "id": "cuid...",
+    "question": "What is mutual fund backed EMI?",
+    "answer": "It allows you to use your mutual funds as collateral..."
+  }
+]
+```
+
+### `GET /api/testimonials`
+Returns a list of customer testimonials for the landing page.
+```json
+[
+  {
+    "id": "cuid...",
+    "name": "Sarah J.",
+    "avatar": "https://i.pravatar.cc/150?u=sarah",
+    "text": "The fastest way I've ever bought a phone!"
+  }
+]
+```
+
 ## Database Schema
 The database uses Prisma and defines a core catalog structure where a `Product` has many `Variant`s, and each `Variant` has many `EmiPlan`s. Since the final price (and MRP) varies by variant, the EMI math is inherently tied to the variant level, ensuring complete accuracy across storage bumps and color variations.
 
@@ -151,6 +176,21 @@ model Order {
   customerPhone String
   status       String   @default("initiated")
   createdAt    DateTime @default(now())
+}
+
+model FAQ {
+  id        String   @id @default(cuid())
+  question  String
+  answer    String
+  createdAt DateTime @default(now())
+}
+
+model Testimonial {
+  id        String   @id @default(cuid())
+  name      String
+  avatar    String
+  text      String
+  createdAt DateTime @default(now())
 }
 ```
 
