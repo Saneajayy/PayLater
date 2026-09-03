@@ -2,6 +2,15 @@
 
 A production-quality web application that lists products and lets users pick a mutual-fund-backed EMI plan. Built closely modeled on fintech commerce pages with a clean, trustworthy aesthetic.
 
+## Screenshots
+
+<div align="center">
+  <img src="public/screenshot-1.png" width="45%" />
+  <img src="public/screenshot-2.png" width="45%" />
+  <img src="public/screenshot-3.png" width="45%" />
+  <img src="public/screenshot-4.png" width="45%" />
+</div>
+
 ## Tech Stack
 - **Framework:** Next.js 14+ (App Router, TypeScript)
 - **Styling:** Tailwind CSS (v4)
