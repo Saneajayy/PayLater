@@ -1,36 +1,159 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PayLater Store
 
-## Getting Started
+A production-quality web application that lists products and lets users pick a mutual-fund-backed EMI plan. Built closely modeled on fintech commerce pages with a clean, trustworthy aesthetic.
 
-First, run the development server:
+## Tech Stack
+- **Framework:** Next.js 14+ (App Router, TypeScript)
+- **Styling:** Tailwind CSS (v4)
+- **Database:** PostgreSQL (Neon)
+- **ORM:** Prisma
+- **Validation:** Zod
+- **Icons:** lucide-react
+- **Deployment:** Vercel
+
+## Setup & Run Locally
 
 ```bash
+git clone <repo>
+cd paylater-store
+npm install
+cp .env.example .env   # fill in DATABASE_URL with your PostgreSQL connection string
+npx prisma migrate dev
+npm run build          # optional, for testing production build locally
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+To re-run the seed script if needed:
+```bash
+npx tsx prisma/seed.ts
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## API Endpoints
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### `GET /api/products`
+Returns all products with their default variant's starting EMI.
+```json
+[
+  {
+    "slug": "iphone-17-pro",
+    "name": "Apple iPhone 17 Pro",
+    "brand": "Apple",
+    "image": "https://.../silver.png",
+    "mrp": 134900,
+    "price": 127400,
+    "discountPercent": 6,
+    "rating": 4.8,
+    "isNew": true,
+    "startingEmi": 5621
+  }
+]
+```
 
-## Learn More
+### `GET /api/products/:slug`
+Returns full product details, variants, and nested EMI plans.
+```json
+{
+  "slug": "iphone-17-pro",
+  "name": "Apple iPhone 17 Pro",
+  "variants": [
+    {
+      "storage": "256GB",
+      "color": "Silver",
+      "emiPlans": [
+        {
+          "tenureMonths": 3,
+          "interestRate": 0,
+          "monthlyAmount": 42467,
+          "cashback": 7500,
+          "totalPayable": 127401
+        }
+      ]
+    }
+  ]
+}
+```
 
-To learn more about Next.js, take a look at the following resources:
+### `POST /api/orders`
+Creates a new order application.
+```json
+// Request
+{ 
+  "variantId": "clx123...", 
+  "emiPlanId": "emi_001...", 
+  "customerName": "Aman Gupta", 
+  "customerPhone": "9876543210" 
+}
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+// Response
+{ 
+  "orderId": "clx456...", 
+  "status": "initiated", 
+  "message": "Your EMI application has started." 
+}
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Database Schema
+The database uses Prisma and defines a core catalog structure where a `Product` has many `Variant`s, and each `Variant` has many `EmiPlan`s. Since the final price (and MRP) varies by variant, the EMI math is inherently tied to the variant level, ensuring complete accuracy across storage bumps and color variations.
 
-## Deploy on Vercel
+```prisma
+model Product {
+  id          String    @id @default(cuid())
+  slug        String    @unique
+  name        String
+  brand       String
+  category    String
+  description String
+  specs       Json       
+  rating      Float      @default(0)
+  reviewCount Int        @default(0)
+  isNew       Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  variants    Variant[]
+}
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+model Variant {
+  id          String    @id @default(cuid())
+  productId   String
+  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  storage     String?   
+  color       String    
+  colorHex    String    
+  mrp         Int       
+  price       Int       
+  imageUrl    String
+  gallery     String[]  
+  stock       Int       @default(25)
+  isDefault   Boolean   @default(false) 
+  emiPlans    EmiPlan[]
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+  @@unique([productId, storage, color])
+}
+
+model EmiPlan {
+  id                 String   @id @default(cuid())
+  variantId          String
+  variant            Variant  @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  tenureMonths       Int
+  interestRate       Float    
+  monthlyAmount      Int
+  cashback           Int      @default(0)
+  isMutualFundBacked Boolean  @default(true)
+  totalPayable       Int      
+
+  @@index([variantId])
+}
+
+model Order {
+  id           String   @id @default(cuid())
+  variantId    String
+  emiPlanId    String
+  customerName String
+  customerPhone String
+  status       String   @default("initiated")
+  createdAt    DateTime @default(now())
+}
+```
+
+## Deployment
+Deployed on Vercel. Database is hosted on Neon (PostgreSQL).
+Set the `DATABASE_URL` environment variable in Vercel. The `prisma generate` step runs automatically during the Vercel build due to standard Next.js + Prisma integration.
