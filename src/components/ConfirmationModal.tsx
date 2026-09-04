@@ -74,11 +74,19 @@ export default function ConfirmationModal({ isOpen, onClose, plan, variantId }: 
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-6">
-            <div className="bg-gray-50 p-5 flex flex-col gap-1.5 border border-gray-200/60">
+            <div className="bg-gray-50 p-5 flex flex-col gap-2 border border-gray-200/60">
               <span className="text-sm text-gray-500 font-semibold tracking-wide uppercase">Selected Plan</span>
-              <div className="flex items-baseline gap-1.5">
-                <span className="text-2xl font-bold text-primary tabular-nums">₹{plan.monthlyAmount.toLocaleString('en-IN')}</span>
-                <span className="text-sm font-medium text-gray-600">/mo for {plan.tenureMonths} months</span>
+              <div className="flex flex-col gap-1">
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-2xl font-bold text-primary tabular-nums">₹{plan.monthlyAmount.toLocaleString('en-IN')}</span>
+                  <span className="text-sm font-medium text-gray-600">/mo for {plan.tenureMonths} months</span>
+                </div>
+                <div className="flex items-center gap-3 text-sm mt-1">
+                  <span className="font-medium text-gray-600">Interest: {plan.interestRate}% p.a.</span>
+                  {plan.cashback > 0 && (
+                    <span className="font-bold text-accent-green">₹{plan.cashback.toLocaleString('en-IN')} Cashback</span>
+                  )}
+                </div>
               </div>
             </div>
 

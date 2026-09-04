@@ -15,54 +15,54 @@ model Product {
   promoImage  String?
   category    String
   description String
-  specs       Json       // key-value list: {"Screen Size": "6.3 inch", "Rear Camera": "48MP + 48MP + 48MP", ...}
-  rating      Float      @default(0)
-  reviewCount Int        @default(0)
-  isNew       Boolean    @default(false)
-  createdAt   DateTime   @default(now())
+  specs       Json // key-value list: {"Screen Size": "6.3 inch", "Rear Camera": "48MP + 48MP + 48MP", ...}
+  rating      Float     @default(0)
+  reviewCount Int       @default(0)
+  isNew       Boolean   @default(false)
+  createdAt   DateTime  @default(now())
   variants    Variant[]
 }
 
 model Variant {
-  id          String    @id @default(cuid())
-  productId   String
-  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
-  storage     String?           // "256GB" — nullable for products with no storage axis
-  color       String            // "Cosmic Orange"
-  colorHex    String            // "#B9724C" — drives the swatch dot
-  mrp         Int               // in rupees, integer
-  price       Int               // discounted price shown to the user
-  imageUrl    String
-  gallery     String[]          // additional image URLs
-  stock       Int       @default(25)
-  isDefault   Boolean   @default(false)   // which variant is pre-selected on page load
-  emiPlans    EmiPlan[]
+  id        String    @id @default(cuid())
+  productId String
+  product   Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  storage   String? // "256GB" — nullable for products with no storage axis
+  color     String // "Cosmic Orange"
+  colorHex  String // "#B9724C" — drives the swatch dot
+  mrp       Int // in rupees, integer
+  price     Int // discounted price shown to the user
+  imageUrl  String
+  gallery   String[] // additional image URLs
+  stock     Int       @default(25)
+  isDefault Boolean   @default(false) // which variant is pre-selected on page load
+  emiPlans  EmiPlan[]
 
   @@unique([productId, storage, color])
 }
 
 model EmiPlan {
-  id                 String   @id @default(cuid())
+  id                 String  @id @default(cuid())
   variantId          String
-  variant            Variant  @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  variant            Variant @relation(fields: [variantId], references: [id], onDelete: Cascade)
   tenureMonths       Int
-  interestRate       Float             // 0 or 10.5 etc, annual %
-  monthlyAmount       Int
-  cashback           Int      @default(0)
-  isMutualFundBacked Boolean  @default(true)
-  totalPayable       Int               // monthlyAmount * tenureMonths, precomputed for transparency
+  interestRate       Float // 0 or 10.5 etc, annual %
+  monthlyAmount      Int
+  cashback           Int     @default(0)
+  isMutualFundBacked Boolean @default(true)
+  totalPayable       Int // monthlyAmount * tenureMonths, precomputed for transparency
 
   @@index([variantId])
 }
 
 model Order {
-  id           String   @id @default(cuid())
-  variantId    String
-  emiPlanId    String
-  customerName String
+  id            String   @id @default(cuid())
+  variantId     String
+  emiPlanId     String
+  customerName  String
   customerPhone String
-  status       String   @default("initiated")
-  createdAt    DateTime @default(now())
+  status        String   @default("initiated")
+  createdAt     DateTime @default(now())
 }
 
 model FAQ {
