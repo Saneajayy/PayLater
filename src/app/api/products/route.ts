@@ -19,10 +19,9 @@ export async function GET() {
       const defaultVariant = p.variants.find(v => v.isDefault) || p.variants[0];
       
       let startingEmi = Infinity;
-      let totalEmiPlans = 0;
+      const totalEmiPlans = defaultVariant ? defaultVariant.emiPlans.length : 0;
       
       p.variants.forEach(v => {
-        totalEmiPlans += v.emiPlans.length;
         v.emiPlans.forEach(plan => {
           if (plan.monthlyAmount < startingEmi) startingEmi = plan.monthlyAmount;
         });
