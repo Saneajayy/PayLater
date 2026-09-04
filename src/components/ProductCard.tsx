@@ -20,9 +20,30 @@ export default function ProductCard({ product }: { product: ProductSummary }) {
         />
       </div>
       <div className="p-5 flex flex-col gap-2 flex-grow">
-        <div className="flex items-center gap-1 text-sm text-gray-500">
-          <Star className="w-4 h-4 fill-accent-amber text-accent-amber" />
-          <span className="font-medium">{product.rating}</span>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1 text-sm text-gray-500">
+            <Star className="w-4 h-4 fill-accent-amber text-accent-amber" />
+            <span className="font-medium">{product.rating}</span>
+          </div>
+          {product.colors && product.colors.length > 0 && (
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px] uppercase font-bold text-gray-400">{product.colors.length} Colors</span>
+              <div className="flex -space-x-1">
+                {product.colors.slice(0, 4).map((colorHex, idx) => (
+                  <div 
+                    key={idx} 
+                    className="w-3.5 h-3.5 rounded-full border border-white shadow-sm"
+                    style={{ backgroundColor: colorHex }}
+                  />
+                ))}
+                {product.colors.length > 4 && (
+                  <div className="w-3.5 h-3.5 rounded-full border border-white bg-gray-100 flex items-center justify-center shadow-sm">
+                    <span className="text-[8px] font-bold text-gray-500">+</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
         <h3 className="font-semibold text-lg leading-tight line-clamp-2 text-primary">{product.name}</h3>
         <div className="mt-auto pt-4 flex flex-col gap-1">
@@ -36,9 +57,14 @@ export default function ProductCard({ product }: { product: ProductSummary }) {
             )}
           </div>
           {product.startingEmi > 0 && (
-            <p className="text-sm font-medium text-accent-green">
-              Starting from ₹{product.startingEmi.toLocaleString('en-IN')}/mo
-            </p>
+            <div className="flex flex-col gap-0.5 mt-1">
+              <p className="text-sm font-medium text-accent-green">
+                EMI starting from ₹{product.startingEmi.toLocaleString('en-IN')}/mo
+              </p>
+              <p className="text-xs text-gray-500">
+                {product.totalEmiPlans} EMI plans available
+              </p>
+            </div>
           )}
           
           <div className="mt-4 w-full bg-[#6C28D9] group-hover:bg-[#8852e1] text-white text-sm font-semibold py-2.5 rounded flex items-center justify-center transition-colors">

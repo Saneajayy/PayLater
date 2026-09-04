@@ -18,6 +18,8 @@ export type ProductSummary = {
   rating: number;
   isNew: boolean;
   startingEmi: number;
+  colors: string[];
+  totalEmiPlans: number;
 };
 
 export interface FaqType {

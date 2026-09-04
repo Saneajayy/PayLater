@@ -9,18 +9,26 @@ async function getProducts(): Promise<ProductSummary[]> {
   const products = await prisma.product.findMany({
     include: {
       variants: {
-        where: { isDefault: true },
         include: { emiPlans: true }
       }
     }
   });
 
   return products.map((p) => {
-    const defaultVariant = p.variants[0];
-    const startingEmi = defaultVariant?.emiPlans.reduce((min, plan) => 
-      plan.monthlyAmount < min ? plan.monthlyAmount : min, Infinity
-    ) || 0;
+    const defaultVariant = p.variants.find(v => v.isDefault) || p.variants[0];
     
+    let startingEmi = Infinity;
+    let totalEmiPlans = 0;
+    
+    p.variants.forEach(v => {
+      totalEmiPlans += v.emiPlans.length;
+      v.emiPlans.forEach(plan => {
+        if (plan.monthlyAmount < startingEmi) startingEmi = plan.monthlyAmount;
+      });
+    });
+    
+    const uniqueColors = Array.from(new Set(p.variants.map(v => v.colorHex)));
+
     let discountPercent = 0;
     if (defaultVariant && defaultVariant.mrp > 0) {
        discountPercent = Math.round(((defaultVariant.mrp - defaultVariant.price) / defaultVariant.mrp) * 100);
@@ -37,7 +45,9 @@ async function getProducts(): Promise<ProductSummary[]> {
       discountPercent,
       rating: p.rating,
       isNew: p.isNew,
-      startingEmi: startingEmi === Infinity ? 0 : startingEmi
+      startingEmi: startingEmi === Infinity ? 0 : startingEmi,
+      colors: uniqueColors,
+      totalEmiPlans
     };
   });
 }
