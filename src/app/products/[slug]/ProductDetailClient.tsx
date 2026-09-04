@@ -116,7 +116,13 @@ export default function ProductDetailClient({ product }: { product: ProductWithV
         </div>
       </main>
 
-      <ProceedBar plan={activePlan} variantId={selectedVariant.id} />
+      <ProceedBar 
+        plan={activePlan} 
+        variantId={selectedVariant.id} 
+        productName={product.name}
+        variantPrice={selectedVariant.price}
+        variantImage={selectedVariant.imageUrl}
+      />
     </div>
   );
 }

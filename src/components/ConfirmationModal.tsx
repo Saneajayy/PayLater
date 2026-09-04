@@ -8,9 +8,12 @@ interface Props {
   onClose: () => void;
   plan: EmiPlan | null;
   variantId: string;
+  productName: string;
+  variantPrice: number;
+  variantImage: string;
 }
 
-export default function ConfirmationModal({ isOpen, onClose, plan, variantId }: Props) {
+export default function ConfirmationModal({ isOpen, onClose, plan, variantId, productName, variantPrice, variantImage }: Props) {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
@@ -74,6 +77,14 @@ export default function ConfirmationModal({ isOpen, onClose, plan, variantId }: 
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-6">
+            <div className="flex gap-4 items-center bg-gray-50 p-4 border border-gray-200/60">
+              <img src={variantImage} alt={productName} className="w-16 h-16 object-contain mix-blend-multiply" />
+              <div className="flex flex-col">
+                <span className="font-bold text-primary">{productName}</span>
+                <span className="text-lg font-bold text-gray-900">₹{variantPrice.toLocaleString('en-IN')}</span>
+              </div>
+            </div>
+
             <div className="bg-gray-50 p-5 flex flex-col gap-2 border border-gray-200/60">
               <span className="text-sm text-gray-500 font-semibold tracking-wide uppercase">Selected Plan</span>
               <div className="flex flex-col gap-1">

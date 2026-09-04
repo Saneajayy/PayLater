@@ -6,9 +6,12 @@ import ConfirmationModal from './ConfirmationModal';
 interface Props {
   plan: EmiPlan | null;
   variantId: string;
+  productName: string;
+  variantPrice: number;
+  variantImage: string;
 }
 
-export default function ProceedBar({ plan, variantId }: Props) {
+export default function ProceedBar({ plan, variantId, productName, variantPrice, variantImage }: Props) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   if (!plan) return null;
@@ -47,6 +50,9 @@ export default function ProceedBar({ plan, variantId }: Props) {
         onClose={() => setIsModalOpen(false)} 
         plan={plan}
         variantId={variantId}
+        productName={productName}
+        variantPrice={variantPrice}
+        variantImage={variantImage}
       />
     </>
   );
